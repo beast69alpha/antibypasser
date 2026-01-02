@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Protected Redirect - Anti-Bypass System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Critical: NoScript detection -->
+    <noscript>
+        <meta http-equiv="refresh" content="0;url=blocked.html?reason=javascript_disabled">
+    </noscript>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="card" data-critical>
+            <!-- Initial Loading State -->
+            <div id="loading-state">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h2>🔒 Verifying Access...</h2>
+                    <p style="color: var(--text-secondary); margin-top: 10px;">
+                        Please wait while we validate your request
+                    </p>
+                </div>
+            </div>
+
+            <!-- Security Checks Display -->
+            <div id="security-checks" class="security-checks" style="display: none;" data-critical>
+                <h4>Security Validation</h4>
+                <div class="check-item">
+                    <span>📍 Referrer Validation</span>
+                    <span id="check-referrer" class="check-status">Checking...</span>
+                </div>
+                <div class="check-item">
+                    <span>⚙️ JavaScript Execution</span>
+                    <span id="check-javascript" class="check-status">Checking...</span>
+                </div>
+                <div class="check-item">
+                    <span>⏱️ Timing Analysis</span>
+                    <span id="check-timing" class="check-status">Checking...</span>
+                </div>
+                <div class="check-item">
+                    <span>🎫 Token Verification</span>
+                    <span id="check-token" class="check-status">Checking...</span>
+                </div>
+                <div class="check-item">
+                    <span>🛡️ Integrity Check</span>
+                    <span id="check-integrity" class="check-status">Checking...</span>
+                </div>
+                <div class="check-item">
+                    <span>🤖 Bot Detection</span>
+                    <span id="check-bot" class="check-status">Checking...</span>
+                </div>
+            </div>
+
+            <!-- Countdown Display -->
+            <div id="countdown-display" class="countdown-container" style="display: none;" data-critical>
+                <div class="countdown-circle">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle
+                            class="progress-ring-circle"
+                            stroke-width="8"
+                            fill="transparent"
+                            r="90"
+                            cx="100"
+                            cy="100"
+                        />
+                    </svg>
+                    <div class="countdown-number" id="countdown-number">5</div>
+                </div>
+                
+                <h2 style="margin-bottom: 10px;">✅ Access Granted!</h2>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                    Redirecting in <span id="countdown-text">5</span> seconds...
+                </p>
+                
+                <div style="margin-top: 20px; padding: 15px; background: var(--dark-bg); border-radius: 8px;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                        <span class="status-indicator valid"></span>
+                        All security checks passed
+                    </p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
+                        Suspicion Score: <span id="suspicion-score" style="color: var(--success-color); font-weight: 600;">0/100</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error/Blocked State -->
+            <div id="blocked-state" style="display: none;">
+                <div class="blocked-icon">🚫</div>
+                <h2 style="text-align: center; color: var(--danger-color); margin-bottom: 15px;">
+                    Access Denied
+                </h2>
+                <div class="alert alert-danger">
+                    <strong>Bypass Attempt Detected!</strong>
+                    <p style="margin-top: 10px;" id="block-reason">
+                        This link must be accessed through a legitimate shortener service.
+                    </p>
+                </div>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <p><strong>Why was I blocked?</strong></p>
+                    <p id="block-details" style="margin-top: 8px; line-height: 1.6;"></p>
+                </div>
+
+                <div style="margin-top: 25px; text-align: center;">
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        If you believe this is an error, please contact the link owner.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Protection Script - Must load first -->
+    <script id="protection-script" data-critical>
+        // Immediate protection - runs before anything else
+        (function() {
+            'use strict';
+            
+            // Anti-debug
+            setInterval(function() {
+                debugger;
+            }, 100);
+
+            // Detect iframe
+            if (window.top !== window.self) {
+                window.top.location = window.self.location;
+            }
+
+            // Prevent right-click (optional - can be annoying)
+            // document.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Clear console to prevent inspection
+            if (window.console) {
+                console.clear();
+            }
+
+            // Mark page load time
+            window.__pageLoadTime = Date.now();
+        })();
+    </script>
+
+    <!-- Load security modules -->
+    <script src="js/link-generator.js"></script>
+    <script src="js/anti-bypass.js"></script>
+    <script src="js/protection.js"></script>
+
+    <!-- Main validation logic -->
+    <script>
+        (async function() {
+            'use strict';
+
+            // Initialize systems
+            const antiBypass = new AntiBypass();
+            const protection = new ProtectionSystem();
+            const linkGenerator = new LinkGenerator();
+
+            // UI Elements
+            const loadingState = document.getElementById('loading-state');
+            const securityChecks = document.getElementById('security-checks');
+            const countdownDisplay = document.getElementById('countdown-display');
+            const blockedState = document.getElementById('blocked-state');
+
+            // Helper: Update check status in UI
+            function updateCheckStatus(checkName, passed) {
+                const element = document.getElementById(`check-${checkName}`);
+                if (element) {
+                    element.textContent = passed ? '✓ Pass' : '✗ Fail';
+                    element.className = `check-status ${passed ? 'pass' : 'fail'}`;
+                }
+            }
+
+            // Helper: Show blocked state
+            function showBlocked(reason, details) {
+                loadingState.style.display = 'none';
+                securityChecks.style.display = 'none';
+                countdownDisplay.style.display = 'none';
+                blockedState.style.display = 'block';
+
+                document.getElementById('block-reason').textContent = reason;
+                document.getElementById('block-details').innerHTML = details;
+
+                // Log to console
+                console.error('ACCESS DENIED:', reason);
+                console.log('Details:', details);
+
+                // Optionally redirect to blocked page after delay
+                setTimeout(() => {
+                    window.location.href = `blocked.html?reason=${encodeURIComponent(reason)}`;
+                }, 3000);
+            }
+
+            // Helper: Start countdown
+            function startCountdown(seconds, destinationUrl) {
+                loadingState.style.display = 'none';
+                securityChecks.style.display = 'none';
+                countdownDisplay.style.display = 'block';
+
+                const countdownNumber = document.getElementById('countdown-number');
+                const countdownText = document.getElementById('countdown-text');
+                const progressCircle = document.querySelector('.progress-ring-circle');
+                const circumference = 2 * Math.PI * 90;
+
+                progressCircle.style.strokeDasharray = circumference;
+                progressCircle.style.strokeDashoffset = circumference;
+
+                let remaining = seconds;
+
+                const countdown = protection.createSecureCountdown(
+                    seconds,
+                    // onComplete
+                    () => {
+                        console.log('Redirecting to:', destinationUrl);
+                        window.location.href = destinationUrl;
+                    },
+                    // onTick
+                    (timeLeft) => {
+                        remaining = timeLeft;
+                        countdownNumber.textContent = timeLeft;
+                        countdownText.textContent = timeLeft;
+
+                        // Update progress ring
+                        const progress = (seconds - timeLeft) / seconds;
+                        const offset = circumference - (progress * circumference);
+                        progressCircle.style.strokeDashoffset = offset;
+                    }
+                );
+
+                // Prevent page manipulation during countdown
+                window.addEventListener('beforeunload', (e) => {
+                    clearInterval(countdown);
+                });
+            }
+
+            // Main validation flow
+            async function validateAndRedirect() {
+                try {
+                    // Show security checks
+                    setTimeout(() => {
+                        loadingState.style.display = 'none';
+                        securityChecks.style.display = 'block';
+                    }, 1000);
+
+                    // Run all security checks
+                    const result = await antiBypass.runAllChecks();
+                    const checks = antiBypass.getChecksStatus();
+
+                    // Update UI with check results
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    Object.entries(checks).forEach(([name, passed]) => {
+                        updateCheckStatus(name, passed);
+                    });
+
+                    // Wait a bit to show results
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Check if access is allowed
+                    if (!result.allowed) {
+                        const details = `
+                            • Suspicion Score: ${antiBypass.getSuspicionScore()}/100<br>
+                            • Failed Checks: ${Object.entries(checks).filter(([k,v]) => !v).map(([k]) => k).join(', ')}<br>
+                            • Referrer: ${document.referrer || 'None'}<br>
+                            <br>
+                            Common reasons for blocking:<br>
+                            - Accessing the link directly without going through the shortener<br>
+                            - Using browser extensions that modify requests<br>
+                            - Disabling JavaScript<br>
+                            - Using automated tools or bots<br>
+                            - Sharing or reusing expired links
+                        `;
+                        
+                        showBlocked(result.reason, details);
+                        return;
+                    }
+
+                    // Access granted - get destination URL
+                    const tokenData = result.tokenData;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const linkId = urlParams.get('id');
+
+                    // Get stored link data
+                    const linkData = linkGenerator.getLinkData(linkId);
+                    
+                    if (!linkData) {
+                        showBlocked(
+                            'Link not found or expired',
+                            'This link does not exist in our system or has expired. Please request a new link from the owner.'
+                        );
+                        return;
+                    }
+
+                    // Check if link has expired
+                    if (linkGenerator.isLinkExpired(linkId)) {
+                        showBlocked(
+                            'Link expired',
+                            'This link has expired (24 hour limit). Please request a new link from the owner.'
+                        );
+                        return;
+                    }
+
+                    // Increment click counter
+                    linkGenerator.incrementClicks(linkId);
+
+                    // Get destination URL
+                    const destinationUrl = linkData.destination;
+
+                    // Update suspicion score display
+                    document.getElementById('suspicion-score').textContent = 
+                        `${antiBypass.getSuspicionScore()}/100`;
+
+                    // Start countdown
+                    startCountdown(5, destinationUrl);
+
+                } catch (error) {
+                    console.error('Validation error:', error);
+                    showBlocked(
+                        'Validation Error',
+                        `An error occurred during validation: ${error.message}<br><br>Please try again or contact the link owner.`
+                    );
+                }
+            }
+
+            // Start validation
+            validateAndRedirect();
+
+            // Monitor for tampering attempts
+            protection.monitorVisibility((hidden, totalHiddenTime) => {
+                if (totalHiddenTime > 30000) { // More than 30 seconds hidden
+                    console.warn('Page was hidden for suspicious duration');
+                }
+            });
+
+            // Detect automation
+            if (protection.detectAutomation()) {
+                showBlocked(
+                    'Automation Detected',
+                    'This page cannot be accessed using automated tools or bots. Please use a regular browser.'
+                );
+            }
+
+            // Additional protection: disable common bypass shortcuts
+            protection.disableBypassShortcuts();
+
+        })();
+    </script>
+</body>
+</html>

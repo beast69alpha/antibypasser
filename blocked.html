@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Access Denied - Anti-Bypass System</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="blocked-icon">🚫</div>
+            
+            <div class="header">
+                <h1 style="color: var(--danger-color);">Access Denied</h1>
+                <p>Bypass attempt detected</p>
+            </div>
+
+            <div class="alert alert-danger">
+                <strong>⚠️ Security Alert</strong>
+                <p style="margin-top: 10px;">
+                    This protected link must be accessed through a legitimate URL shortener service.
+                    Direct access or bypass attempts are not allowed.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Reason for Block:</strong></p>
+                <p id="block-reason" style="margin-top: 8px; font-size: 1rem; color: var(--text-primary);">
+                    Analyzing...
+                </p>
+            </div>
+
+            <div class="security-checks" style="margin-top: 25px;">
+                <h4>Common Bypass Attempts Detected:</h4>
+                <div style="padding: 15px 0;">
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ Direct URL access (skipping shortener)
+                    </p>
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ Missing or invalid referrer
+                    </p>
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ JavaScript disabled or manipulated
+                    </p>
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ Expired or tampered security token
+                    </p>
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ Automated bot or script
+                    </p>
+                    <p style="margin: 8px 0; color: var(--text-secondary);">
+                        ❌ Page reload or link reuse
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: var(--dark-bg); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                <h3 style="margin-bottom: 15px; font-size: 1.1rem;">How to Access This Link Properly:</h3>
+                <ol style="padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                    <li>Get the shortened link from the content owner</li>
+                    <li>Click on the shortened link (e.g., from ShrinkMe, Exe.io, etc.)</li>
+                    <li>Complete the ad viewing process on the shortener site</li>
+                    <li>You will be automatically redirected to the protected page</li>
+                    <li>Wait for security verification</li>
+                    <li>After countdown, access your destination</li>
+                </ol>
+            </div>
+
+            <div class="info-box" style="margin-top: 25px;">
+                <p><strong>💡 Why This Protection Exists:</strong></p>
+                <p style="margin-top: 8px; line-height: 1.6;">
+                    This system protects content creators' monetization by ensuring users complete
+                    the required ad viewing process. Bypassing this system is unfair to creators
+                    who provide free content and rely on ad revenue to continue their work.
+                </p>
+            </div>
+
+            <div style="margin-top: 25px; text-align: center;">
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                    If you believe this is an error, please contact the link owner.
+                </p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 10px;">
+                    Session ID: <code id="session-id" style="color: var(--primary-color);"></code>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const reason = urlParams.get('reason') || 'Unknown violation';
+        
+        // Display reason
+        const reasons = {
+            'javascript_disabled': 'JavaScript is disabled in your browser. This page requires JavaScript to function.',
+            'invalid_referrer': 'Invalid or missing referrer. You must access this link through a legitimate shortener.',
+            'direct_access': 'Direct access detected. This link cannot be accessed directly.',
+            'token_invalid': 'Invalid or expired security token. The link may have expired.',
+            'token_expired': 'This link has expired (24 hour limit). Please request a new link.',
+            'suspicious_behavior': 'Suspicious behavior detected. Your access patterns triggered security alerts.',
+            'automation': 'Automated access detected. This page cannot be accessed using bots or scripts.',
+            'devtools_open': 'Developer tools detected. Please close DevTools and try again.',
+            'time_manipulation': 'Time manipulation detected. System clock tampering is not allowed.',
+            'link_reuse': 'This link has already been used. Each link can only be used once.',
+            'high_suspicion': 'Suspicion score too high. Too many security indicators triggered.'
+        };
+
+        const blockReason = document.getElementById('block-reason');
+        blockReason.textContent = reasons[reason] || reason;
+
+        // Generate and display session ID
+        const sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+        document.getElementById('session-id').textContent = sessionId;
+
+        // Log to console for debugging
+        console.error('Access Denied');
+        console.log('Reason:', reason);
+        console.log('Session ID:', sessionId);
+        console.log('Referrer:', document.referrer || 'None');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Timestamp:', new Date().toISOString());
+
+        // Prevent going back to the protected page
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+    </script>
+</body>
+</html>
