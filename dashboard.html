@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Anti-Bypass Protection</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .links-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .link-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .link-item:last-child {
+            border-bottom: none;
+        }
+        .btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-logout {
+            background: #f44336;
+            color: white;
+        }
+        .btn-create {
+            background: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <div>
+                <button class="btn btn-create" onclick="window.location.href='index.html'">Create New Link</button>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalLinks">0</div>
+                <div>Total Links</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAccesses">0</div>
+                <div>Total Accesses</div>
+            </div>
+        </div>
+
+        <div class="links-section">
+            <h2>Your Links</h2>
+            <div id="linksList">Loading...</div>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script>
+        // Check if logged in
+        if (!api.token) {
+            window.location.href = 'login.html';
+        }
+
+        async function loadDashboard() {
+            try {
+                const data = await api.getLinks();
+                
+                // Update stats
+                document.getElementById('totalLinks').textContent = data.stats.total_links || 0;
+                document.getElementById('totalAccesses').textContent = data.stats.total_accesses || 0;
+
+                // Display links
+                const linksList = document.getElementById('linksList');
+                if (data.links.length === 0) {
+                    linksList.innerHTML = '<p>No links yet. Create your first link!</p>';
+                } else {
+                    linksList.innerHTML = data.links.map(link => `
+                        <div class="link-item">
+                            <h3>${link.title || 'Untitled Link'}</h3>
+                            <p>Link ID: ${link.link_id}</p>
+                            <p>Destination: ${link.destination_url}</p>
+                            <p>Accesses: ${link.access_count}</p>
+                            <p>Created: ${new Date(link.created_at).toLocaleDateString()}</p>
+                            <button class="btn" onclick="copyLink('${link.link_id}')">Copy Link</button>
+                            <button class="btn btn-logout" onclick="deleteLink('${link.link_id}')">Delete</button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                alert('Failed to load dashboard: ' + error.message);
+                if (error.message.includes('Authentication')) {
+                    api.clearToken();
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        function logout() {
+            api.logout();
+            window.location.href = 'login.html';
+        }
+
+        function copyLink(linkId) {
+            const url = `${window.location.origin}/go.html?id=${linkId}`;
+            navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
+
+        async function deleteLink(linkId) {
+            if (confirm('Are you sure you want to delete this link?')) {
+                try {
+                    await api.deleteLink(linkId);
+                    loadDashboard();
+                } catch (error) {
+                    alert('Failed to delete link: ' + error.message);
+                }
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

@@ -1,32 +1,212 @@
-# 🔒 Anti-Bypass Link Protection System
+# 🔒 Anti-Bypass Link Protection System (Multi-User Platform)
 
-A comprehensive front-end solution to protect URL shortener earnings by detecting and blocking bypass attempts.
+A comprehensive full-stack solution for protecting URL shortener earnings with user authentication and centralized link management.
+
+> **Version 2.0**: Now with backend API, database integration, and multi-user support!
 
 ## 📋 Table of Contents
 - [Overview](#overview)
-- [Complete System Flow](#complete-system-flow)
-- [How It Works](#how-it-works)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
 - [Security Features](#security-features)
-- [Detection Mechanisms](#detection-mechanisms)
-- [Setup & Usage](#setup--usage)
-- [File Structure](#file-structure)
-- [Bypass Detection Details](#bypass-detection-details)
-- [Limitations](#limitations)
-- [FAQ](#faq)
+- [Deployment](#deployment)
+- [Cost Estimates](#cost-estimates)
+- [Troubleshooting](#troubleshooting)
+- [Migration Guide](#migration-guide)
 
 ---
 
 ## 🎯 Overview
 
-This system acts as a **gatekeeper** between URL shorteners (ShrinkMe, Exe.io, etc.) and your final destination links. It ensures users complete the ad-viewing process fairly before accessing content.
+This is a **full-stack multi-user platform** that protects URL shortener earnings by detecting and blocking bypass attempts. Multiple users can register, create protected links, and manage them through a centralized dashboard.
 
 ### The Problem:
 - Users bypass shortener ads using inspect element, direct access, or automated tools
 - Content creators lose monetization revenue
-- Fair users are disadvantaged while bypasses succeed
+- Need for a scalable solution supporting multiple creators
 
 ### The Solution:
-Multi-layer client-side protection that:
+Full-stack platform with:
+- ✅ User authentication and personal dashboards
+- ✅ Centralized database for link management
+- ✅ RESTful API for scalability
+- ✅ Multi-layer client-side protection
+- ✅ Token-based validation system
+- ✅ Access logging and analytics
+- ✅ Cross-device link management
+
+---
+
+## 🌟 Features
+
+### Frontend Features
+- User registration and login system
+- Personal dashboard with statistics
+- Link creation and management interface
+- Real-time access counting
+- Protected link pages with anti-bypass mechanisms
+- DevTools and automation detection
+- One-time use token validation
+
+### Backend Features
+- RESTful API with JWT authentication
+- MySQL database integration
+- User account management
+- CRUD operations for links
+- Token generation and validation
+- Access logging and analytics
+- Rate limiting and security headers
+- Password encryption with bcrypt
+
+---
+
+## 📁 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       Frontend (Client)                         │
+│  - login.html (Authentication)                                  │
+│  - dashboard.html (Link Management)                             │
+│  - index.html (Link Creation)                                   │
+│  - go.html (Protection Page)                                    │
+└──────────────────────┬──────────────────────────────────────────┘
+                       │ HTTPS/API
+┌──────────────────────┴──────────────────────────────────────────┐
+│                    Backend API (Node.js)                        │
+│  - Authentication (JWT)                                         │
+│  - Link CRUD Operations                                         │
+│  - Token Generation/Validation                                  │
+│  - Access Logging                                               │
+└──────────────────────┬──────────────────────────────────────────┘
+                       │ SQL
+┌──────────────────────┴──────────────────────────────────────────┐
+│                    MySQL Database                               │
+│  - users (accounts)                                             │
+│  - links (protected links)                                      │
+│  - link_tokens (one-time tokens)                                │
+│  - access_logs (analytics)                                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js (v14+)
+- MySQL (v5.7+)
+- npm or yarn
+
+### 1. Database Setup
+```bash
+# Install MySQL and create database
+mysql -u root -p < backend/database/schema.sql
+```
+
+### 2. Backend Setup
+```bash
+cd backend
+npm install
+copy .env.example .env
+# Edit .env with your database credentials and JWT secret
+npm start
+```
+
+Server runs on `http://localhost:3000`
+
+### 3. Frontend Setup
+```bash
+# Update API URL in js/api-client.js
+# Then serve frontend files
+npx http-server -p 5500
+```
+
+Frontend runs on `http://localhost:5500`
+
+### 4. Usage
+1. Visit `http://localhost:5500/login.html`
+2. Register a new account
+3. Access dashboard to create and manage links
+4. Share protected links with your shortener URLs
+
+---
+
+## 🔌 API Documentation
+
+### Authentication
+```
+POST /api/auth/register
+Body: { username, email, password }
+Response: { token, user }
+
+POST /api/auth/login
+Body: { email, password }
+Response: { token, user }
+
+GET /api/auth/me
+Headers: Authorization: Bearer <token>
+Response: { user }
+```
+
+### Link Management (Protected)
+```
+POST /api/links
+Headers: Authorization: Bearer <token>
+Body: { destinationUrl, title, shortenerUrl }
+Response: { linkId, id }
+
+GET /api/links
+Headers: Authorization: Bearer <token>
+Response: { links[], stats }
+
+GET /api/links/:linkId
+PUT /api/links/:linkId
+DELETE /api/links/:linkId
+POST /api/links/:linkId/token
+```
+
+### Protection (Public)
+```
+POST /api/protection/validate
+Body: { token, linkId, referrer }
+Response: { success, destination }
+
+GET /api/protection/link/:linkId
+Response: { title, shortenerUrl, createdAt }
+```
+
+See [backend/README.md](backend/README.md) for complete API documentation.
+
+---
+
+## 🗄️ Database Schema
+
+### Tables
+- **users**: User accounts with encrypted passwords
+- **links**: Protected links with destination URLs
+- **link_tokens**: One-time use tokens with expiration
+- **access_logs**: Detailed access attempt tracking
+- **user_settings**: User preferences and configurations
+
+Full schema in [backend/database/schema.sql](backend/database/schema.sql)
+
+---
+
+## 🔒 Security Features
+
+### Backend Security
+1. **JWT Authentication** - Token-based auth with expiration
+2. **Password Hashing** - bcrypt with 10 rounds
+3. **SQL Injection Protection** - Parameterized queries
+4. **Rate Limiting** - 100 requests per 15 minutes
+5. **CORS Protection** - Configurable origins
+6. **Helmet.js** - Security headers
+7. **Input Validation** - express-validator
+
+### Frontend Protection
 - ✅ Validates proper referrer from shortener services
 - ✅ Enforces JavaScript requirement
 - ✅ Implements one-time use tokens

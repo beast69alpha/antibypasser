@@ -1,13 +1,29 @@
-# 🚀 Deployment Guide - अपनी साइट को Live करें
+# 🚀 Deployment Guide - Multi-User Platform
 
-## समस्या (Problem):
-URL shorteners को publicly accessible URLs चाहिए। `localhost` या `127.0.0.1` links work नहीं करते।
+## Overview
+
+This guide covers deploying the full-stack Anti-Bypass Platform with backend API and database.
+
+> **Note**: For client-only deployment (no backend), see the [legacy deployment guide](docs/LEGACY_DEPLOYMENT.md).
 
 ---
 
-## ✅ Solution 1: GitHub Pages (100% Free, बिल्कुल मुफ्त)
+## 📋 Deployment Options
 
-### Steps:
+| Option | Cost | Difficulty | Best For |
+|--------|------|-----------|----------|
+| VPS (DigitalOcean) | $12/mo | Medium | Production, Full Control |
+| Heroku | $7-25/mo | Easy | Quick Start |
+| Railway.app | Free-$10/mo | Very Easy | Hobby Projects |
+| Docker | $5-10/mo | Medium | DevOps Teams |
+
+---
+
+## Option 1: VPS Deployment (Recommended)
+
+**Cost**: ~$12/month | **Best for**: Production use
+
+### Prerequisites
 
 1. **GitHub account बनाएं** (अगर नहीं है):
    - https://github.com पर जाएं
