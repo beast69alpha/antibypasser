@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://72.62.145.63/api';
 
 class APIClient {
     constructor() {
