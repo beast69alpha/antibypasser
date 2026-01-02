@@ -59,16 +59,18 @@ sudo apt install -y mysql-server
 sudo mysql_secure_installation
 ```
 
-Answer the prompts:
-- Set root password: **YES** (choose a strong password)
+**Note**: Ubuntu's MySQL uses `auth_socket` authentication by default. You may see:
+> "Skipping password set for root as authentication with auth_socket is used by default."
+
+This is normal! Just answer the remaining prompts:
 - Remove anonymous users: **YES**
 - Disallow root login remotely: **YES**
 - Remove test database: **YES**
 - Reload privilege tables: **YES**
 
 ```bash
-# Login to MySQL
-sudo mysql -u root -p
+# Login to MySQL (no password needed with sudo)
+sudo mysql
 
 # Create database and user
 CREATE DATABASE antibypasser_db;
@@ -77,6 +79,8 @@ GRANT ALL PRIVILEGES ON antibypasser_db.* TO 'antibypasser'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
+
+**⚠️ Important**: Replace `YOUR_STRONG_PASSWORD` with a strong password and **save it** - you'll need it later!
 
 ---
 
