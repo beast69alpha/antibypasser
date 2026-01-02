@@ -11,6 +11,10 @@
   "keywords": ["antibypass", "link-protection", "url-shortener"],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "mysql2": "^3.6.5",

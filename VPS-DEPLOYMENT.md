@@ -35,13 +35,13 @@ su - antibypasser
 ## Step 2: Install Node.js
 
 ```bash
-# Install Node.js 18 LTS
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Install Node.js 20 LTS (Current stable version)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Verify installation
-node --version  # Should show v18.x.x
-npm --version   # Should show 9.x.x
+node --version  # Should show v20.x.x
+npm --version   # Should show 10.x.x
 
 # Install PM2 globally for process management
 sudo npm install -g pm2
