@@ -235,90 +235,109 @@
                 });
             }
 
-            // Main validation flow
+            // Main validation flow (OPTIMIZED - Fast validation)
             async function validateAndRedirect() {
                 try {
-                    // Show security checks
-                    setTimeout(() => {
+                    // Set 15 second timeout for entire validation
+                    const validationPromise = (async () => {
+                        // IMMEDIATELY run all security checks in parallel
+                        const result = await antiBypass.runAllChecks();
+                        const checks = antiBypass.getChecksStatus();
+
+                        // Show security checks UI
                         loadingState.style.display = 'none';
                         securityChecks.style.display = 'block';
-                    }, 1000);
 
-                    // Run all security checks
-                    const result = await antiBypass.runAllChecks();
-                    const checks = antiBypass.getChecksStatus();
+                        // Update UI with check results (minimal delay)
+                        Object.entries(checks).forEach(([name, passed]) => {
+                            updateCheckStatus(name, passed);
+                        });
 
-                    // Update UI with check results
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    Object.entries(checks).forEach(([name, passed]) => {
-                        updateCheckStatus(name, passed);
-                    });
+                        // Check if access is allowed
+                        if (!result.allowed) {
+                            const details = `
+                                • Suspicion Score: ${antiBypass.getSuspicionScore()}/100<br>
+                                • Failed Checks: ${Object.entries(checks).filter(([k,v]) => !v).map(([k]) => k).join(', ')}<br>
+                                • Referrer: ${document.referrer || 'None'}<br>
+                                <br>
+                                Common reasons for blocking:<br>
+                                - Accessing the link directly without going through the shortener<br>
+                                - Using browser extensions that modify requests<br>
+                                - Disabling JavaScript<br>
+                                - Using automated tools or bots<br>
+                                - Sharing or reusing expired links
+                            `;
+                            
+                            showBlocked(result.reason, details);
+                            return;
+                        }
 
-                    // Wait a bit to show results
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                        // Access granted - get destination URL
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const linkId = urlParams.get('id');
+                        const token = urlParams.get('token');
 
-                    // Check if access is allowed
-                    if (!result.allowed) {
-                        const details = `
-                            • Suspicion Score: ${antiBypass.getSuspicionScore()}/100<br>
-                            • Failed Checks: ${Object.entries(checks).filter(([k,v]) => !v).map(([k]) => k).join(', ')}<br>
-                            • Referrer: ${document.referrer || 'None'}<br>
-                            <br>
-                            Common reasons for blocking:<br>
-                            - Accessing the link directly without going through the shortener<br>
-                            - Using browser extensions that modify requests<br>
-                            - Disabling JavaScript<br>
-                            - Using automated tools or bots<br>
-                            - Sharing or reusing expired links
-                        `;
+                        // Destination URL comes from backend validation response
+                        let destinationUrl = null;
                         
-                        showBlocked(result.reason, details);
-                        return;
-                    }
+                        try {
+                            // Try to get from backend response first
+                            if (result && result.destination) {
+                                destinationUrl = result.destination;
+                            } else {
+                                // Fallback to localStorage (for frontend-generated links)
+                                const linkData = linkGenerator.getLinkData(linkId);
+                                
+                                if (!linkData) {
+                                    showBlocked(
+                                        'Link not found or expired',
+                                        'This link does not exist in our system or has expired. Please request a new link from the owner.'
+                                    );
+                                    return;
+                                }
 
-                    // Access granted - get destination URL
-                    const tokenData = result.tokenData;
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const linkId = urlParams.get('id');
+                                // Check if link has expired
+                                if (linkGenerator.isLinkExpired(linkId)) {
+                                    showBlocked(
+                                        'Link expired',
+                                        'This link has expired (24 hour limit). Please request a new link from the owner.'
+                                    );
+                                    return;
+                                }
 
-                    // Get stored link data
-                    const linkData = linkGenerator.getLinkData(linkId);
-                    
-                    if (!linkData) {
-                        showBlocked(
-                            'Link not found or expired',
-                            'This link does not exist in our system or has expired. Please request a new link from the owner.'
-                        );
-                        return;
-                    }
+                                // Increment click counter
+                                linkGenerator.incrementClicks(linkId);
+                                destinationUrl = linkData.destination;
+                            }
+                        } catch (error) {
+                            console.error('Error getting link data:', error);
+                            showBlocked(
+                                'Error retrieving link',
+                                'Could not retrieve the destination URL. Please try again.'
+                            );
+                            return;
+                        }
 
-                    // Check if link has expired
-                    if (linkGenerator.isLinkExpired(linkId)) {
-                        showBlocked(
-                            'Link expired',
-                            'This link has expired (24 hour limit). Please request a new link from the owner.'
-                        );
-                        return;
-                    }
+                        // Update suspicion score display
+                        document.getElementById('suspicion-score').textContent = 
+                            `${antiBypass.getSuspicionScore()}/100`;
 
-                    // Increment click counter
-                    linkGenerator.incrementClicks(linkId);
+                        // Start countdown (2 seconds instead of 5)
+                        startCountdown(2, destinationUrl);
+                    })();
 
-                    // Get destination URL
-                    const destinationUrl = linkData.destination;
+                    // Add timeout protection
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Validation timeout - backend not responding')), 15000)
+                    );
 
-                    // Update suspicion score display
-                    document.getElementById('suspicion-score').textContent = 
-                        `${antiBypass.getSuspicionScore()}/100`;
-
-                    // Start countdown
-                    startCountdown(5, destinationUrl);
+                    await Promise.race([validationPromise, timeoutPromise]);
 
                 } catch (error) {
                     console.error('Validation error:', error);
                     showBlocked(
                         'Validation Error',
-                        `An error occurred during validation: ${error.message}<br><br>Please try again or contact the link owner.`
+                        `${error.message}<br><br>If the problem persists, please contact support.`
                     );
                 }
             }
